@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from timm.models.layers import DropPath
 from .layers import LayerNorm
-from .xca_block import XCA, PositionalEncodingFourier
+from .xca import XCA, PositionalEncodingFourier
 import math
 
 

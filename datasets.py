@@ -1,11 +1,3 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-
-# All rights reserved.
-
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-
-
 import os
 from torchvision import datasets, transforms
 
@@ -59,7 +51,7 @@ def build_transform(is_train, args):
     std = IMAGENET_INCEPTION_STD if not imagenet_default_mean_and_std else IMAGENET_DEFAULT_STD
 
     if is_train:
-        # this should always dispatch to transforms_imagenet_train
+        # This should always dispatch to transforms_imagenet_train
         transform = create_transform(
             input_size=args.input_size,
             is_training=True,
@@ -87,7 +79,7 @@ def build_transform(is_train, args):
 
     t = []
     if resize_im:
-        # warping (no cropping) when evaluated at 384 or larger
+        # Warping (no cropping) when evaluated at 384 or larger
         if args.input_size >= 384:
             t.append(
                 transforms.Resize((args.input_size, args.input_size),
@@ -99,7 +91,7 @@ def build_transform(is_train, args):
                 args.crop_pct = 224 / 256
             size = int(args.input_size / args.crop_pct)
             t.append(
-                # to maintain same ratio w.r.t. 224 images
+                # To maintain same ratio w.r.t. 224 images
                 transforms.Resize(size, interpolation=transforms.InterpolationMode.BICUBIC),
             )
             t.append(transforms.CenterCrop(args.input_size))

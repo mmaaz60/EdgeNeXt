@@ -1,5 +1,5 @@
-from edgenext import EdgeNeXt
-from edgenext_bn_hs import EdgeNeXtBNHS
+from .edgenext import EdgeNeXt
+from .edgenext_bn_hs import EdgeNeXtBNHS
 from timm.models.registry import register_model
 
 """
@@ -19,7 +19,7 @@ def edgenext_xx_small(pretrained=False, **kwargs):
     # For A100: FPS @ BS=1: 212.13 & @ BS=256: 7042.06 versus FPS @ BS=1: 96.68 & @ BS=256: 4624.71 for MobileViT_XXS
     model = EdgeNeXt(depths=[2, 2, 6, 2], dims=[24, 48, 88, 168], expan_ratio=4,
                      global_block=[0, 1, 1, 1],
-                     global_block_type=['None', 'ConvNext2XCABlock', 'ConvNext2XCABlock', 'ConvNext2XCABlock'],
+                     global_block_type=['None', 'SDTA', 'SDTA', 'SDTA'],
                      use_pos_embd_xca=[False, True, False, False],
                      kernel_sizes=[3, 5, 7, 9],
                      heads=[4, 4, 4, 4],
@@ -38,7 +38,7 @@ def edgenext_x_small(pretrained=False, **kwargs):
     # For A100: FPS @ BS=1: 179.55 & @ BS=256: 4404.95 versus FPS @ BS=1: 94.55 & @ BS=256: 2361.53 for MobileViT_XS
     model = EdgeNeXt(depths=[3, 3, 9, 3], dims=[32, 64, 100, 192], expan_ratio=4,
                      global_block=[0, 1, 1, 1],
-                     global_block_type=['None', 'ConvNext2XCABlock', 'ConvNext2XCABlock', 'ConvNext2XCABlock'],
+                     global_block_type=['None', 'SDTA', 'SDTA', 'SDTA'],
                      use_pos_embd_xca=[False, True, False, False],
                      kernel_sizes=[3, 5, 7, 9],
                      heads=[4, 4, 4, 4],
@@ -57,7 +57,7 @@ def edgenext_small(pretrained=False, **kwargs):
     # For A100: FPS @ BS=1: 172.33 & @ BS=256: 3010.25 versus FPS @ BS=1: 93.84 & @ BS=256: 1785.92 for MobileViT_S
     model = EdgeNeXt(depths=[3, 3, 9, 3], dims=[48, 96, 160, 304], expan_ratio=4,
                      global_block=[0, 1, 1, 1],
-                     global_block_type=['None', 'ConvNext2XCABlock', 'ConvNext2XCABlock', 'ConvNext2XCABlock'],
+                     global_block_type=['None', 'SDTA', 'SDTA', 'SDTA'],
                      use_pos_embd_xca=[False, True, False, False],
                      kernel_sizes=[3, 5, 7, 9],
                      d2_scales=[2, 2, 3, 4],
@@ -80,13 +80,11 @@ def edgenext_xx_small_bn_hs(pretrained=False, **kwargs):
     # For A100: FPS @ BS=1: 219.66 & @ BS=256: 10359.98
     model = EdgeNeXtBNHS(depths=[2, 2, 6, 2], dims=[24, 48, 88, 168], expan_ratio=4,
                          global_block=[0, 1, 1, 1],
-                         global_block_type=['None', 'ConvNext2XCABlockBNHS', 'ConvNext2XCABlockBNHS',
-                                            'ConvNext2XCABlockBNHS'],
+                         global_block_type=['None', 'SDTA_BN_HS', 'SDTA_BN_HS', 'SDTA_BN_HS'],
                          use_pos_embd_xca=[False, True, False, False],
                          kernel_sizes=[3, 5, 7, 9],
                          heads=[4, 4, 4, 4],
                          d2_scales=[2, 2, 3, 4],
-                         use_bn_hs=True,
                          **kwargs)
 
     return model
@@ -99,13 +97,11 @@ def edgenext_x_small_bn_hs(pretrained=False, **kwargs):
     # For A100: FPS @ BS=1: 179.25 & @ BS=256: 6059.59
     model = EdgeNeXtBNHS(depths=[3, 3, 9, 3], dims=[32, 64, 100, 192], expan_ratio=4,
                          global_block=[0, 1, 1, 1],
-                         global_block_type=['None', 'ConvNext2XCABlockBNHS', 'ConvNext2XCABlockBNHS',
-                                            'ConvNext2XCABlockBNHS'],
+                         global_block_type=['None', 'SDTA_BN_HS', 'SDTA_BN_HS', 'SDTA_BN_HS'],
                          use_pos_embd_xca=[False, True, False, False],
                          kernel_sizes=[3, 5, 7, 9],
                          heads=[4, 4, 4, 4],
                          d2_scales=[2, 2, 3, 4],
-                         use_bn_hs=True,
                          **kwargs)
 
     return model
@@ -118,12 +114,10 @@ def edgenext_small_bn_hs(pretrained=False, **kwargs):
     # For A100: FPS @ BS=1: 174.68 & @ BS=256: 3808.19
     model = EdgeNeXtBNHS(depths=[3, 3, 9, 3], dims=[48, 96, 160, 304], expan_ratio=4,
                          global_block=[0, 1, 1, 1],
-                         global_block_type=['None', 'ConvNext2XCABlockBNHS', 'ConvNext2XCABlockBNHS',
-                                            'ConvNext2XCABlockBNHS'],
+                         global_block_type=['None', 'SDTA_BN_HS', 'SDTA_BN_HS', 'SDTA_BN_HS'],
                          use_pos_embd_xca=[False, True, False, False],
                          kernel_sizes=[3, 5, 7, 9],
                          d2_scales=[2, 2, 3, 4],
-                         use_bn_hs=True,
                          **kwargs)
 
     return model

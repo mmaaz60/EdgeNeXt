@@ -1,11 +1,3 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-
-# All rights reserved.
-
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-
-
 import math
 from typing import Iterable, Optional
 import torch
@@ -34,7 +26,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         step = data_iter_step // update_freq
         if step >= num_training_steps_per_epoch:
             continue
-        it = start_steps + step  # global training iteration
+        it = start_steps + step  # Global training iteration
         # Update LR & WD for the first acc
         if lr_schedule_values is not None or wd_schedule_values is not None and data_iter_step % update_freq == 0:
             for i, param_group in enumerate(optimizer.param_groups):
@@ -53,18 +45,18 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
             with torch.cuda.amp.autocast():
                 output = model(samples)
                 loss = criterion(output, targets)
-        else:  # full precision
+        else:  # Full precision
             output = model(samples)
             loss = criterion(output, targets)
 
         loss_value = loss.item()
 
-        if not math.isfinite(loss_value):  # this could trigger if using AMP
+        if not math.isfinite(loss_value):  # This could trigger if using AMP
             print("Loss is {}, stopping training".format(loss_value))
             assert math.isfinite(loss_value)
 
         if use_amp:
-            # this attribute is added by timm on one optimizer (adahessian)
+            # This attribute is added by timm on one optimizer (adahessian)
             is_second_order = hasattr(optimizer, 'is_second_order') and optimizer.is_second_order
             loss /= update_freq
             grad_norm = loss_scaler(loss, optimizer, clip_grad=max_norm,
@@ -74,7 +66,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                 optimizer.zero_grad()
                 if model_ema is not None:
                     model_ema.update(model)
-        else:  # full precision
+        else:  # Full precision
             loss /= update_freq
             loss.backward()
             if (data_iter_step + 1) % update_freq == 0:
@@ -129,7 +121,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                 wandb_logger._wandb.log({'Rank-0 Batch Wise/train_grad_norm': grad_norm}, commit=False)
             wandb_logger._wandb.log({'Rank-0 Batch Wise/global_train_step': it})
 
-    # gather the stats from all processes
+    # Gather the stats from all processes
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
@@ -142,7 +134,7 @@ def evaluate(data_loader, model, device, use_amp=False):
     metric_logger = utils.MetricLogger(delimiter="  ")
     header = 'Test:'
 
-    # switch to evaluation mode
+    # Switch to evaluation mode
     model.eval()
     for batch in metric_logger.log_every(data_loader, 10, header):
         images = batch[0]
@@ -151,7 +143,7 @@ def evaluate(data_loader, model, device, use_amp=False):
         images = images.to(device, non_blocking=True)
         target = target.to(device, non_blocking=True)
 
-        # compute output
+        # Compute output
         if use_amp:
             with torch.cuda.amp.autocast():
                 output = model(images)
@@ -166,7 +158,7 @@ def evaluate(data_loader, model, device, use_amp=False):
         metric_logger.update(loss=loss.item())
         metric_logger.meters['acc1'].update(acc1.item(), n=batch_size)
         metric_logger.meters['acc5'].update(acc5.item(), n=batch_size)
-    # gather the stats from all processes
+    # Gather the stats from all processes
     metric_logger.synchronize_between_processes()
     print('* Acc@1 {top1.global_avg:.3f} Acc@5 {top5.global_avg:.3f} loss {losses.global_avg:.3f}'
           .format(top1=metric_logger.acc1, top5=metric_logger.acc5, losses=metric_logger.loss))

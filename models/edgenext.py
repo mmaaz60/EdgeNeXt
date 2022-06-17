@@ -1,9 +1,9 @@
 import torch
 from torch import nn
 from timm.models.layers import trunc_normal_
-from layers import LayerNorm
-from xca_block import PositionalEncodingFourier
-from edgenext_block import ConvNextBlock, SDTA
+from .layers import LayerNorm
+from .xca import PositionalEncodingFourier
+from .edgenext_block import ConvNextBlock, SDTA
 
 
 class EdgeNeXt(nn.Module):
@@ -79,10 +79,8 @@ class EdgeNeXt(nn.Module):
         for i in range(1, 4):
             x = self.downsample_layers[i](x)
             x = self.stages[i](x)
-        if self.use_bn_hs:
-            return self.norm(x).mean([-2, -1])
-        else:
-            return self.norm(x.mean([-2, -1]))  # global average pooling, (N, C, H, W) -> (N, C)
+
+        return self.norm(x.mean([-2, -1]))  # Global average pooling, (N, C, H, W) -> (N, C)
 
     def forward(self, x):
         x = self.forward_features(x)

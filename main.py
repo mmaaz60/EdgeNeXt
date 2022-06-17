@@ -3,7 +3,6 @@ import datetime
 import numpy as np
 import time
 import torch
-import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import json
 import os
@@ -14,26 +13,15 @@ from timm.data.mixup import Mixup
 from timm.models import create_model
 from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
 from timm.utils import ModelEma
-from optim_factory import create_optimizer, LayerDecayValueAssigner
+from optim_factory import create_optimizer
 
 from datasets import build_dataset
 from engine import train_one_epoch, evaluate
 
 from utils import NativeScalerWithGradNormCount as NativeScaler
 import utils
-import models.convnext
-import models.convnext_isotropic
-import models.mobile_convnext_s
-import models.mobile_convnext_s_xcit
-import models.mobile_convnext_xxs_xcit
-import models.mobile_convnext_xs_xcit
-import models.mobile_convnext_s_xcit_2
-import models.mobile_convnext_xs
-import models.mobile_convnext_xxs
-import models.mobile_convnext_s_final_experiments
-import models.paper_draft_exp
-from ptflops import get_model_complexity_info
-from copy import deepcopy
+import models.model
+
 from sampler import MultiScaleSamplerDDP
 from fvcore.nn import FlopCountAnalysis
 
@@ -58,17 +46,17 @@ def get_args_parser():
     parser.add_argument('--batch_size', default=256, type=int,
                         help='Per GPU batch size')
     parser.add_argument('--epochs', default=300, type=int)
-    parser.add_argument('--update_freq', default=1, type=int,
+    parser.add_argument('--update_freq', default=2, type=int,
                         help='gradient accumulation steps')
 
     # Model parameters
-    parser.add_argument('--model', default='conv2dta_small', type=str, metavar='MODEL',
+    parser.add_argument('--model', default='edgenext_small', type=str, metavar='MODEL',
                         help='Name of model to train')
-    parser.add_argument('--drop_path', type=float, default=0.1, metavar='PCT',  # TODO: Uniform drop rate
+    parser.add_argument('--drop_path', type=float, default=0.1, metavar='PCT',
                         help='Drop path rate (default: 0.0)')
     parser.add_argument('--input_size', default=256, type=int,
                         help='image input size')
-    parser.add_argument('--layer_scale_init_value', default=1e-6, type=float,  # TODO: Try 1e-6
+    parser.add_argument('--layer_scale_init_value', default=1e-6, type=float,
                         help="Layer scale initial values")
 
     # EMA related parameters
@@ -78,8 +66,7 @@ def get_args_parser():
     parser.add_argument('--model_ema_eval', type=str2bool, default=False, help='Using ema to eval during training.')
 
     # Optimization parameters
-    parser.add_argument('--opt', default='adamw', type=str, metavar='OPTIMIZER',
-                        help='Optimizer (default: "adamw"')
+    parser.add_argument('--opt', default='adamw', type=str, metavar='OPTIMIZER', help='Optimizer (default: "adamw"')
     parser.add_argument('--opt_eps', default=1e-8, type=float, metavar='EPSILON',
                         help='Optimizer Epsilon (default: 1e-8)')
     parser.add_argument('--opt_betas', default=None, type=float, nargs='+', metavar='BETA',
@@ -95,7 +82,7 @@ def get_args_parser():
         the end of training improves performance for ViTs.""")
 
     parser.add_argument('--lr', type=float, default=6e-3, metavar='LR',
-                        help='learning rate (default: 4e-3), with total batch size 4096')
+                        help='learning rate (default: 6e-3), with total batch size 4096')
     parser.add_argument('--layer_decay', type=float, default=1.0)
     parser.add_argument('--min_lr', type=float, default=1e-6, metavar='LR',
                         help='lower lr bound for cyclic schedulers that hit 0 (1e-6)')
@@ -103,7 +90,7 @@ def get_args_parser():
                         help='epochs to warmup LR, if scheduler supports')
     parser.add_argument('--warmup_steps', type=int, default=-1, metavar='N',
                         help='num of steps to warmup LR, will overload warmup_epochs if set > 0')
-    parser.add_argument('--warmup_start_lr', type=float, default=0,  metavar='LR',
+    parser.add_argument('--warmup_start_lr', type=float, default=0, metavar='LR',
                         help='Starting LR for warmup (default 0)')
 
     # Augmentation parameters
@@ -120,8 +107,8 @@ def get_args_parser():
     parser.add_argument('--crop_pct', type=float, default=None)
 
     # * Random Erase params
-    parser.add_argument('--reprob', type=float, default=0.0, metavar='PCT',  # TODO: Don't use it
-                        help='Random erase prob (default: 0.25)')
+    parser.add_argument('--reprob', type=float, default=0.0, metavar='PCT',
+                        help='Random erase prob (default: 0.0)')
     parser.add_argument('--remode', type=str, default='pixel',
                         help='Random erase mode (default: "pixel")')
     parser.add_argument('--recount', type=int, default=1,
@@ -129,7 +116,7 @@ def get_args_parser():
     parser.add_argument('--resplit', type=str2bool, default=False,
                         help='Do not random erase first (clean) augmentation split')
 
-    # * Mixup params
+    # Mixup params
     parser.add_argument('--mixup', type=float, default=0.0,
                         help='mixup alpha, mixup enabled if > 0.')
     parser.add_argument('--cutmix', type=float, default=0.0,
@@ -143,24 +130,15 @@ def get_args_parser():
     parser.add_argument('--mixup_mode', type=str, default='batch',
                         help='How to apply mixup/cutmix params. Per "batch", "pair", or "elem"')
 
-    # * Finetuning params
-    parser.add_argument('--finetune', default='',
-                        help='finetune from checkpoint')
-    parser.add_argument('--head_init_scale', default=1.0, type=float,
-                        help='classifier head initial scale, typically adjusted in fine-tuning')
-    parser.add_argument('--model_key', default='model|module', type=str,
-                        help='which key to load from saved state dict, usually model or model_ema')
-    parser.add_argument('--model_prefix', default='', type=str)
-
     # Dataset parameters
-    parser.add_argument('--data_path', default='/datasets01/imagenet_full_size/061417/', type=str,
-                        help='dataset path')
+    parser.add_argument('--data_path', default='datasets/imagenet_full', type=str,
+                        help='dataset path (path to full imagenet)')
     parser.add_argument('--eval_data_path', default=None, type=str,
                         help='dataset path for evaluation')
     parser.add_argument('--nb_classes', default=1000, type=int,
                         help='number of the classification types')
     parser.add_argument('--imagenet_default_mean_and_std', type=str2bool, default=True)
-    parser.add_argument('--data_set', default='IMNET', choices=['CIFAR', 'IMNET', 'image_folder'],
+    parser.add_argument('--data_set', default='IMNET', choices=['IMNET', 'image_folder'],
                         type=str, help='ImageNet dataset path')
     parser.add_argument('--output_dir', default='',
                         help='path where to save, empty for no saving')
@@ -185,11 +163,11 @@ def get_args_parser():
                         help='Enabling distributed evaluation')
     parser.add_argument('--disable_eval', type=str2bool, default=False,
                         help='Disabling evaluation during training')
-    parser.add_argument('--num_workers', default=6, type=int)
+    parser.add_argument('--num_workers', default=10, type=int)
     parser.add_argument('--pin_mem', type=str2bool, default=True,
                         help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
 
-    # distributed training parameters
+    # Distributed training parameters
     parser.add_argument('--world_size', default=1, type=int,
                         help='number of distributed processes')
     parser.add_argument('--local_rank', default=-1, type=int)
@@ -203,11 +181,10 @@ def get_args_parser():
     # Weights and Biases arguments
     parser.add_argument('--enable_wandb', type=str2bool, default=False,
                         help="enable logging to Weights and Biases")
-    parser.add_argument('--project', default='convnext', type=str,
+    parser.add_argument('--project', default='edgenext', type=str,
                         help="The name of the W&B project where you're sending the new run.")
     parser.add_argument('--wandb_ckpt', type=str2bool, default=False,
                         help="Save model checkpoints as W&B Artifacts.")
-    parser.add_argument("--stats_only", action="store_true", help="Flag to compute only the stats (GMac, Params & FPS")
     parser.add_argument("--multi_scale_sampler", action="store_true", help="Either to use multi-scale sampler or not.")
     parser.add_argument('--min_crop_size_w', default=160, type=int)
     parser.add_argument('--max_crop_size_w', default=320, type=int)
@@ -227,7 +204,7 @@ def main(args):
     print(args)
     device = torch.device(args.device)
 
-    # fix the seed for reproducibility
+    # Fix the seed for reproducibility
     seed = args.seed + utils.get_rank()
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -316,33 +293,10 @@ def main(args):
         num_classes=args.nb_classes,
         drop_path_rate=args.drop_path,
         layer_scale_init_value=args.layer_scale_init_value,
-        head_init_scale=args.head_init_scale,
+        head_init_scale=1.0,
         input_res=args.input_size,
         classifier_dropout=args.classifier_dropout,
     )
-
-    if args.finetune:
-        if args.finetune.startswith('https'):
-            checkpoint = torch.hub.load_state_dict_from_url(
-                args.finetune, map_location='cpu', check_hash=True)
-        else:
-            checkpoint = torch.load(args.finetune, map_location='cpu')
-
-        print("Load ckpt from %s" % args.finetune)
-        checkpoint_model = None
-        for model_key in args.model_key.split('|'):
-            if model_key in checkpoint:
-                checkpoint_model = checkpoint[model_key]
-                print("Load state_dict by model_key = %s" % model_key)
-                break
-        if checkpoint_model is None:
-            checkpoint_model = checkpoint
-        state_dict = model.state_dict()
-        for k in ['head.weight', 'head.bias']:
-            if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:
-                print(f"Removing key {k} from pretrained checkpoint")
-                del checkpoint_model[k]
-        utils.load_state_dict(model, checkpoint_model, prefix=args.model_prefix)
     model.to(device)
 
     model_ema = None
@@ -370,11 +324,8 @@ def main(args):
     print("Number of training training per epoch = %d" % num_training_steps_per_epoch)
 
     if args.layer_decay < 1.0 or args.layer_decay > 1.0:
-        num_layers = 12  # convnext layers divided into 12 parts, each with a different decayed lr value.
-        assert args.model in ['convnext_small', 'convnext_base', 'convnext_large', 'convnext_xlarge'], \
-            "Layer Decay impl only supports convnext_small/base/large/xlarge"
-        assigner = LayerDecayValueAssigner(
-            list(args.layer_decay ** (num_layers + 1 - i) for i in range(num_layers + 2)))
+        # Layer decay not supported
+        raise NotImplementedError
     else:
         assigner = None
 
@@ -429,91 +380,26 @@ def main(args):
     max_accuracy = 0.0
     if args.model_ema and args.model_ema_eval:
         max_accuracy_ema = 0.0
-    if args.stats_only:
-        # Calculate Model FLOPS
-        macs, params = get_model_complexity_info(model, (3, args.input_size, args.input_size), as_strings=True,
-                                                 print_per_layer_stat=True, verbose=True)
-        print(f"Params & Flops using ptflops:")
-        print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
-        print('{:<30}  {:<8}'.format('Number of parameters: ', params))
 
-        # Print layer wise params
-        from prettytable import PrettyTable
+    def count_parameters(model):
+        total_trainable_params = 0
+        for name, parameter in model.named_parameters():
+            if not parameter.requires_grad:
+                continue
+            params = parameter.numel()
+            total_trainable_params += params
+        return total_trainable_params
 
-        def count_parameters(model):
-            table = PrettyTable(["Modules", "Parameters"])
-            total_params = 0
-            for name, parameter in model.named_parameters():
-                if not parameter.requires_grad: continue
-                params = parameter.numel()
-                table.add_row([name, params])
-                total_params += params
-            print(table)
-            return total_params
-        total_params = count_parameters(model)
+    total_params = count_parameters(model)
+    # fvcore to calculate MAdds
+    input_res = (3, args.input_size, args.input_size)
+    input = torch.ones(()).new_empty((1, *input_res), dtype=next(model.parameters()).dtype,
+                                     device=next(model.parameters()).device)
+    flops = FlopCountAnalysis(model, input)
+    model_flops = flops.total()
+    print(f"Total Trainable Params: {round(total_params * 1e-6, 2)} M")
+    print(f"MAdds: {round(model_flops * 1e-6, 2)} M")
 
-        # fvcore
-        input_res = (3, args.input_size, args.input_size)
-        input = torch.ones(()).new_empty((1, *input_res), dtype=next(model.parameters()).dtype,
-                                         device=next(model.parameters()).device)
-        flops = FlopCountAnalysis(model, input)
-        model_flops = flops.total()
-        print(f"Total Trainable Params: {round(total_params * 1e-6, 2)} M")
-        print(f"Flops using fvcore: {round(model_flops * 1e-6, 2)} M")
-
-        # Using Model summary
-        from model_summary import get_model_activation, get_model_flops
-        input_dim = (3, 256, 256)  # set the input dimension
-
-        activations, num_conv2d = get_model_activation(model, input_dim)
-        print('{:>16s} : {:<.4f} [M]'.format('#Activations', activations / 10 ** 6))
-        print('{:>16s} : {:<d}'.format('#Conv2d', num_conv2d))
-
-        flops = get_model_flops(model, input_dim, False)
-        print('{:>16s} : {:<.4f} [G]'.format('FLOPs', flops / 10 ** 9))
-
-        num_parameters = sum(map(lambda x: x.numel(), model.parameters()))
-        print('{:>16s} : {:<.4f} [M]'.format('#Params', num_parameters / 10 ** 6))
-
-        # Measure the FPS @ BS=1
-        input_res = (3, args.input_size, args.input_size)
-        batch = torch.ones(()).new_empty((1, *input_res),
-                                         dtype=next(model.parameters()).dtype, device=next(model.parameters()).device)
-        model_fps = deepcopy(model)
-        model_fps.eval()
-        inference_times = []
-        with torch.no_grad():
-            # A few times pass the inputs to the network - warm-up
-            for i in range(10):
-                preds = model(batch)
-            for i in range(1000):
-                start = time.time()
-                _ = model_fps(batch)
-                end = time.time()
-                inference_times.append(end - start)
-            print(f"FPS @ BS=1: {round(1 / (sum(inference_times)/len(inference_times)), 2)}")
-            # Measure the FPS @ BS=256
-            inference_times = []
-            batch_size = 256
-            input_res = (3, args.input_size, args.input_size)
-            inputs = torch.ones(()).new_empty((batch_size, *input_res),
-                                             dtype=next(model.parameters()).dtype, device=next(model.parameters()).device)
-            # A few times pass the inputs to the network - warm-up
-            for i in range(2):
-                preds = model(inputs)
-            # Perform the actual benchmarking following DeiT paper
-            end = time.time()
-            for i in range(30):
-                # Run the model forward pass
-                preds = model(inputs)
-                inference_times.append(time.time() - end)
-                end = time.time()
-        print(f"Total passes to network: {30}")
-        print(f"Batch size: {batch_size}")
-        print(f"Total network time: {sum(inference_times)} sec")
-        print(f"Throughput: {30 * batch_size / sum(inference_times)} FPS")
-
-        return 0
     print("Start training for %d epochs" % args.epochs)
     start_time = time.time()
     for epoch in range(args.start_epoch, args.epochs):
@@ -559,7 +445,7 @@ def main(args):
                          'epoch': epoch,
                          'n_parameters': n_parameters}
 
-            # repeat testing routines for EMA, if ema eval is turned on
+            # Repeat testing routines for EMA, if ema eval is turned on
             if args.model_ema and args.model_ema_eval:
                 test_stats_ema = evaluate(data_loader_val, model_ema.ema, device, use_amp=args.use_amp)
                 print(f"Accuracy of the model EMA on {len(dataset_val)} test images: {test_stats_ema['acc1']:.1f}%")
@@ -596,7 +482,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('ConvNeXt training and evaluation script', parents=[get_args_parser()])
+    parser = argparse.ArgumentParser('EdgeNeXt training and evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
