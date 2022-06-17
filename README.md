@@ -1,4 +1,4 @@
-# EdgeNeXt: 
+# EdgeNeXt
 Light-weight and Efficient Networks for Mobile Vision Applications
 
 ## :rocket: News
@@ -6,7 +6,7 @@ Light-weight and Efficient Networks for Mobile Vision Applications
 
 <hr />
 
-![main figure](images/EdgeNext.jpeg)
+![main figure](images/EdgeNext.png)
 > **Abstract:** *Designing lightweight general purpose networks for edge devices is a challenging task due to the compute constraints. In this domain, CNN-based light-weight architectures are considered the de-facto choice due to their efficiency in terms of parameters and complexity. However, they are based on spatially local operations and exhibit a limited receptive field. While vision transformers alleviate these issues and can learn global representations, they are typically compute intensive and difficult to optimize. Here, we investigate how to effectively encode both local and global information, while being efficient in terms of both parameters and MAdds on vision tasks. To this end, we propose EdgeNeXt, a hybrid CNN-Transformer architecture that strives to jointly optimize parameters and MAdds for efficient inference on edge devices. Within our EdgeNeXt, we introduce split depthwise transpose attention (SDTA) encoder that splits input tensors into multiple channel groups and utilizes depthwise convolution along with self-attention across channel dimensions to implicitly increase the receptive field and encode multi-scale features. Our extensive experiments on classification, detection and segmentation settings, reveal the merits of the proposed approach, outperforming state-of-the-art methods with comparatively lower compute requirements. Our EdgeNeXt model with 1.3M parameters achieves 71.2\% top-1 accuracy on ImageNet-1K, outperforming MobileViT with an absolute gain of 2.2\% with similar parameters and 28\% reduction in MAdds. Further, our EdgeNeXt model with 5.6M parameters achieves 79.4\% top-1 accuracy on ImageNet-1K.* 
 <hr />
 
@@ -23,8 +23,8 @@ Light-weight and Efficient Networks for Mobile Vision Applications
 ## Installation
 1. Create conda environment
 ```shell
-conda create --name mobilenext python=3.8
-conda activate mobilenext
+conda create --name edgenext python=3.8
+conda activate edgenext
 ```
 2. Install PyTorch and torchvision
 ```shell
@@ -59,7 +59,12 @@ Download the [ImageNet-1K](http://image-net.org/) classification dataset and str
 Download the pretrained weights and run the following command for evaluation on ImageNet-1K dataset.
 
 ```shell
-python main.py --model edgenext_small --eval True --batch_size 16 --data_path <path to imagenet> --output_dir <results> --resume <path to downloaded checkpoints>
+wget https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_small.pth
+python main.py --model edgenext_small --eval True --batch_size 16 --data_path <path to imagenet> --output_dir <results> --resume edgenext_small.pth
+```
+This should give,
+```text
+Acc@1 79.412 Acc@5 94.512 loss 0.881
 ```
 
 ## Training
@@ -75,3 +80,14 @@ python -m torch.distributed.launch --nproc_per_node=8 main.py \
 --output_dir </path/to/save_results> \
 --use_amp True --multi_scale_sampler
 ```
+
+## Model Zoo
+
+| Name |Acc@1 | #Params | MAdds | Model |
+|:---:|:---:|:---:| :---:|:---:|
+| edgenext_small | 79.43 | 5.59M | 1.26G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_small.pth)
+| edgenext_x_small | 75.00 | 2.34M | 538M | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_x_small.pth)
+| edgenext_xx_small | 71.23 | 1.33M | 261M | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_xx_small.pth)
+| edgenext_small_bn_hs | 78.39 | 5.58M | 1.25G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_small_bn_hs.pth)
+| edgenext_x_small_bn_hs | 74.87 | 2.34M | 536M | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_x_small_bn_hs.pth)
+| edgenext_xx_small_bn_hs | 70.33 | 1.33M | 260M | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_xx_small_bn_hs.pth)
