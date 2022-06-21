@@ -22,7 +22,7 @@ and [Fahad Shahbaz Khan](https://scholar.google.es/citations?user=zvaeYnUAAAAJ&h
 <hr />
 
 ## Comparison with SOTA ViTs and Hybrid Architectures
-![results](images/Figure_1.png)
+![results](images/madds_vs_top_1.png)
 
 <hr />
 
@@ -80,6 +80,7 @@ This should give,
 ```text
 Acc@1 79.412 Acc@5 94.512 loss 0.881
 ```
+<hr />
 
 ## Training
 
@@ -94,6 +95,7 @@ python -m torch.distributed.launch --nproc_per_node=8 main.py \
 --output_dir </path/to/save_results> \
 --use_amp True --multi_scale_sampler
 ```
+<hr />
 
 ## Model Zoo
 
@@ -105,3 +107,27 @@ python -m torch.distributed.launch --nproc_per_node=8 main.py \
 | edgenext_small_bn_hs | 78.39 | 5.58M | 1.25G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_small_bn_hs.pth)
 | edgenext_x_small_bn_hs | 74.87 | 2.34M | 536M | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_x_small_bn_hs.pth)
 | edgenext_xx_small_bn_hs | 70.33 | 1.33M | 260M | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_xx_small_bn_hs.pth)
+
+<hr />
+
+## Citation
+If you use our work, please consider citing:
+```bibtex
+    @article{Maaz2022EdgeNeXt,
+        title={EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications},
+        author={Muhammad Maaz and Abdelrahman Shaker and Hisham Cholakkal and Salman Khan and Syed Waqas Zamir and Rao Muhammad Anwer and Fahad Shahbaz Khan},
+        journal={coming soon},
+        year={2022}
+    }
+```
+
+<hr />
+
+## Contact
+Should you have any question, please create an issue on this repository or contact at muhammad.maaz@mbzuai.ac.ae & abdelrahman.youssief@mbzuai.ac.ae
+
+<hr />
+
+## References
+Our code is based on [ConvNeXt](https://github.com/facebookresearch/ConvNeXt) repository. 
+We thank them for releasing their code.
