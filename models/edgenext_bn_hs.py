@@ -1,9 +1,9 @@
 import torch
 from torch import nn
 from timm.models.layers import trunc_normal_
-from .layers import LayerNorm
-from .xca import PositionalEncodingFourier
-from .edgenext_block import ConvNextBlockBNHSwish, SDTABNHS
+from .layers import LayerNorm, PositionalEncodingFourier
+from .sdta_encoder import SDTAEncoderBNHS
+from .conv_encoder import ConvEncoderBNHS
 
 
 class EdgeNeXtBNHS(nn.Module):
@@ -30,9 +30,9 @@ class EdgeNeXtBNHS(nn.Module):
         self.downsample_layers.append(stem)
         for i in range(3):
             downsample_layer = nn.Sequential(
-                        nn.BatchNorm2d(dims[i]),
-                        nn.Conv2d(dims[i], dims[i + 1], kernel_size=2, stride=2, bias=False),
-                    )
+                nn.BatchNorm2d(dims[i]),
+                nn.Conv2d(dims[i], dims[i + 1], kernel_size=2, stride=2, bias=False),
+            )
             self.downsample_layers.append(downsample_layer)
 
         self.stages = nn.ModuleList()  # 4 feature resolution stages, each consisting of multiple residual blocks
@@ -43,16 +43,16 @@ class EdgeNeXtBNHS(nn.Module):
             for j in range(depths[i]):
                 if j > depths[i] - global_block[i] - 1:
                     if global_block_type[i] == 'SDTA_BN_HS':
-                        stage_blocks.append(SDTABNHS(dim=dims[i], drop_path=dp_rates[cur + j],
-                                                     expan_ratio=expan_ratio, scales=d2_scales[i],
-                                                     use_pos_emb=use_pos_embd_xca[i],
-                                                     num_heads=heads[i]))
+                        stage_blocks.append(SDTAEncoderBNHS(dim=dims[i], drop_path=dp_rates[cur + j],
+                                                            expan_ratio=expan_ratio, scales=d2_scales[i],
+                                                            use_pos_emb=use_pos_embd_xca[i],
+                                                            num_heads=heads[i]))
                     else:
                         raise NotImplementedError
                 else:
-                    stage_blocks.append(ConvNextBlockBNHSwish(dim=dims[i], drop_path=dp_rates[cur + j],
-                                                              layer_scale_init_value=layer_scale_init_value,
-                                                              expan_ratio=expan_ratio, kernel_size=kernel_sizes[i]))
+                    stage_blocks.append(ConvEncoderBNHS(dim=dims[i], drop_path=dp_rates[cur + j],
+                                                        layer_scale_init_value=layer_scale_init_value,
+                                                        expan_ratio=expan_ratio, kernel_size=kernel_sizes[i]))
 
             self.stages.append(nn.Sequential(*stage_blocks))
             cur += depths[i]

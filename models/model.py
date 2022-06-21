@@ -68,8 +68,6 @@ def edgenext_small(pretrained=False, **kwargs):
 
 """
     Using BN & HSwish instead of LN & GeLU
-    For reporting inference time on IPhone 12
-
 """
 
 

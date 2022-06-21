@@ -1,81 +1,11 @@
 import torch
 from torch import nn
 from timm.models.layers import DropPath
-from .layers import LayerNorm
-from .xca import XCA, PositionalEncodingFourier
+from .layers import LayerNorm, PositionalEncodingFourier
 import math
 
 
-class ConvNextBlock(nn.Module):
-    r""" ConvNeXt Block. There are two equivalent implementations:
-    (1) DwConv -> LayerNorm (channels_first) -> 1x1 Conv -> GELU -> 1x1 Conv; all in (N, C, H, W)
-    (2) DwConv -> Permute to (N, H, W, C); LayerNorm (channels_last) -> Linear -> GELU -> Linear; Permute back
-    We use (2) as we find it slightly faster in PyTorch
-
-    Args:
-        dim (int): Number of input channels.
-        drop_path (float): Stochastic depth rate. Default: 0.0
-        layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
-    """
-
-    def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6, expan_ratio=4, kernel_size=7):
-        super().__init__()
-        self.dwconv = nn.Conv2d(dim, dim, kernel_size=kernel_size,
-                                padding=kernel_size // 2, groups=dim)  # depthwise conv
-        self.norm = LayerNorm(dim, eps=1e-6)
-        self.pwconv1 = nn.Linear(dim, expan_ratio * dim)  # pointwise/1x1 convs, implemented with linear layers
-        self.act = nn.GELU()  # TODO: MobileViT is using 'swish'
-        self.pwconv2 = nn.Linear(expan_ratio * dim, dim)
-        self.gamma = nn.Parameter(layer_scale_init_value * torch.ones((dim)),
-                                  requires_grad=True) if layer_scale_init_value > 0 else None
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
-
-    def forward(self, x):
-        input = x
-        x = self.dwconv(x)
-        x = x.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
-        x = self.norm(x)
-        x = self.pwconv1(x)
-        x = self.act(x)
-        x = self.pwconv2(x)
-        if self.gamma is not None:
-            x = self.gamma * x
-        x = x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
-
-        x = input + self.drop_path(x)
-        return x
-
-
-class ConvNextBlockBNHSwish(nn.Module):
-    def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6, expan_ratio=4, kernel_size=7):
-        super().__init__()
-        self.dwconv = nn.Conv2d(dim, dim, kernel_size=kernel_size,
-                                padding=kernel_size // 2, groups=dim, bias=False)  # depthwise conv
-        self.norm = nn.BatchNorm2d(dim)
-        self.pwconv1 = nn.Linear(dim, expan_ratio * dim)  # pointwise/1x1 convs, implemented with linear layers
-        self.act = nn.Hardswish()
-        self.pwconv2 = nn.Linear(expan_ratio * dim, dim)
-        self.gamma = nn.Parameter(layer_scale_init_value * torch.ones((dim)),
-                                  requires_grad=True) if layer_scale_init_value > 0 else None
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
-
-    def forward(self, x):
-        input = x
-        x = self.dwconv(x)
-        x = self.norm(x)
-        x = x.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
-        x = self.pwconv1(x)
-        x = self.act(x)
-        x = self.pwconv2(x)
-        if self.gamma is not None:
-            x = self.gamma * x
-        x = x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
-
-        x = input + self.drop_path(x)
-        return x
-
-
-class SDTA(nn.Module):
+class SDTAEncoder(nn.Module):
     def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6, expan_ratio=4,
                  use_pos_emb=True, num_heads=8, qkv_bias=True, attn_drop=0., drop=0., scales=1):
         super().__init__()
@@ -144,7 +74,10 @@ class SDTA(nn.Module):
         return x
 
 
-class SDTABNHS(nn.Module):
+class SDTAEncoderBNHS(nn.Module):
+    """
+        SDTA Encoder with Batch Norm and Hard-Swish Activation
+    """
     def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6, expan_ratio=4,
                  use_pos_emb=True, num_heads=8, qkv_bias=True, attn_drop=0., drop=0., scales=1):
         super().__init__()
@@ -214,3 +147,43 @@ class SDTABNHS(nn.Module):
 
         return x
 
+
+class XCA(nn.Module):
+    def __init__(self, dim, num_heads=8, qkv_bias=False, attn_drop=0., proj_drop=0.):
+        super().__init__()
+        self.num_heads = num_heads
+        self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1))
+
+        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(dim, dim)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+    def forward(self, x):
+        B, N, C = x.shape
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
+        qkv = qkv.permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
+
+        q = q.transpose(-2, -1)
+        k = k.transpose(-2, -1)
+        v = v.transpose(-2, -1)
+
+        q = torch.nn.functional.normalize(q, dim=-1)
+        k = torch.nn.functional.normalize(k, dim=-1)
+
+        attn = (q @ k.transpose(-2, -1)) * self.temperature
+        # -------------------
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v).permute(0, 3, 1, 2).reshape(B, N, C)
+        # ------------------
+        x = self.proj(x)
+        x = self.proj_drop(x)
+
+        return x
+
+    @torch.jit.ignore
+    def no_weight_decay(self):
+        return {'temperature'}
