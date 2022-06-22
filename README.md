@@ -9,7 +9,7 @@
 [Rao Muhammad Anwer](https://scholar.google.com/citations?hl=en&authuser=1&user=_KlvMVoAAAAJ)
 and [Fahad Shahbaz Khan](https://scholar.google.es/citations?user=zvaeYnUAAAAJ&hl=en)
 
-### ****Paper**: comming soon**
+### ****Paper**: https://arxiv.org/abs/2206.10589**
 
 ## :rocket: News
 * **(Jun 22, 2022)**
@@ -116,7 +116,7 @@ If you use our work, please consider citing:
     @article{Maaz2022EdgeNeXt,
         title={EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications},
         author={Muhammad Maaz and Abdelrahman Shaker and Hisham Cholakkal and Salman Khan and Syed Waqas Zamir and Rao Muhammad Anwer and Fahad Shahbaz Khan},
-        journal={coming soon},
+        journal={2206.10589},
         year={2022}
     }
 ```
