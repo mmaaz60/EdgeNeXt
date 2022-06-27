@@ -195,6 +195,8 @@ def get_args_parser():
     parser.add_argument("--three_aug", action="store_true",
                         help="Either to use three augments proposed by DeiT-III")
     parser.add_argument('--classifier_dropout', default=0.0, type=float)
+    parser.add_argument('--usi_eval', type=str2bool, default=False,
+                        help="Enable it when testing USI model.")
 
     return parser
 
@@ -203,6 +205,16 @@ def main(args):
     utils.init_distributed_mode(args)
     print(args)
     device = torch.device(args.device)
+
+    # Eval/USI_eval configurations
+    if args.eval:
+        if args.usi_eval:
+            args.crop_pct = 0.95
+            model_state_dict_name = 'state_dict'
+        else:
+            model_state_dict_name = 'model_ema'
+    else:
+        model_state_dict_name = 'model'
 
     # Fix the seed for reproducibility
     seed = args.seed + utils.get_rank()
@@ -369,7 +381,7 @@ def main(args):
 
     utils.auto_load_model(
         args=args, model=model, model_without_ddp=model_without_ddp,
-        optimizer=optimizer, loss_scaler=loss_scaler, model_ema=model_ema)
+        optimizer=optimizer, loss_scaler=loss_scaler, model_ema=model_ema, state_dict_name=model_state_dict_name)
 
     if args.eval:
         print(f"Eval only mode")
