@@ -53,3 +53,17 @@ In the pursuit of achieving ever-increasing accuracy, large and complex neural n
 ## Qualitative Results (Detection)
 
 ![results](images/Detection.png)
+
+## BibTeX:
+```
+@misc{https://doi.org/10.48550/arxiv.2206.10589,
+  doi = {10.48550/ARXIV.2206.10589},
+  url = {https://arxiv.org/abs/2206.10589},
+  author = {Maaz, Muhammad and Shaker, Abdelrahman and Cholakkal, Hisham and Khan, Salman and Zamir, Syed Waqas and Anwer, Rao Muhammad and Khan, Fahad Shahbaz},
+  keywords = {Computer Vision and Pattern Recognition (cs.CV), FOS: Computer and information sciences, FOS: Computer and information sciences},
+  title = {EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications},
+  publisher = {arXiv},
+  year = {2022},
+  copyright = {Creative Commons Attribution 4.0 International}
+}
+```
