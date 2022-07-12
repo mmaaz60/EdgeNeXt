@@ -23,12 +23,11 @@ Our proposed EdgeNeXt model runs in real time on NVIDIA Jetson Nano edge device,
 
 ## Abstract
 
-
-
 ![main figure](images/EdgeNext.png)
-
+<p align="justify"> 
 In the pursuit of achieving ever-increasing accuracy, large and complex neural networks are usually developed. Such models demand high computational resources and therefore cannot be deployed on edge devices. It is of great interest to build resource-efficient general purpose networks due to their usefulness in several application areas. In this work, we strive to effectively combine the strengths of both CNN and Transformer models and propose a new efficient hybrid architecture EdgeNeXt. Specifically in EdgeNeXt, we introduce split depth-wise transpose attention (SDTA) encoder that splits input tensors into multiple channel groups and utilizes depth-wise convolution along with self-attention across channel dimensions to implicitly increase the receptive field and encode multi-scale features. Our extensive experiments on classification, detection and segmentation tasks, reveal the merits of the proposed approach, outperforming state-of-the-art methods with comparatively lower compute requirements. Our EdgeNeXt model with 1.3M parameters achieves 71.2% top-1 accuracy on ImageNet-1K, outperforming MobileViT with an absolute gain of 2.2% with 28% reduction in FLOPs. Further, our EdgeNeXt model with 5.6M parameters achieves 79.4% top-1 accuracy on ImageNet-1K.
-
+ </p>
+ 
 ## Model Zoo
 
 | Name |Acc@1 | #Params | MAdds | Model |
@@ -54,16 +53,15 @@ In the pursuit of achieving ever-increasing accuracy, large and complex neural n
 
 ![results](images/Detection.png)
 
-## BibTeX:
+## Citation
 ```
-@misc{https://doi.org/10.48550/arxiv.2206.10589,
-  doi = {10.48550/ARXIV.2206.10589},
-  url = {https://arxiv.org/abs/2206.10589},
-  author = {Maaz, Muhammad and Shaker, Abdelrahman and Cholakkal, Hisham and Khan, Salman and Zamir, Syed Waqas and Anwer, Rao Muhammad and Khan, Fahad Shahbaz},
-  keywords = {Computer Vision and Pattern Recognition (cs.CV), FOS: Computer and information sciences, FOS: Computer and information sciences},
-  title = {EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications},
-  publisher = {arXiv},
-  year = {2022},
-  copyright = {Creative Commons Attribution 4.0 International}
+@article{Maaz2022EdgeNeXt,
+    title={EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications},
+    author={Muhammad Maaz and Abdelrahman Shaker and Hisham Cholakkal and Salman Khan and Syed Waqas Zamir and Rao Muhammad Anwer and Fahad Shahbaz Khan},
+    journal={2206.10589},
+    year={2022}
 }
 ```
+
+## Contact
+Should you have any question, please create an issue on this repository or contact at [muhammad.maaz@mbzuai.ac.ae](muhammad.maaz@mbzuai.ac.ae) & [abdelrahman.youssief@mbzuai.ac.ae](abdelrahman.youssief@mbzuai.ac.ae)
