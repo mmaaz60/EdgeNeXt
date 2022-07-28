@@ -15,6 +15,10 @@ and [Fahad Shahbaz Khan](https://scholar.google.es/citations?user=zvaeYnUAAAAJ&h
 [![slides](https://img.shields.io/badge/Presentation-Slides-B762C1)](https://mbzuaiac-my.sharepoint.com/:b:/g/personal/muhammad_maaz_mbzuai_ac_ae/EaFA4bSPEMBNlJuHMbKDD3UBHmwXrmpijSRqZITk2l1-wQ?e=b7ruLV)
 
 ## :rocket: News
+* **(Jul 28, 2022)**
+  * EdgeNeXt-B model is released. It achieves 82.5% top-1 ImageNet-1K accuracy with 18.51M parameters and 3.84G MAdds.
+  Further, using USI (https://arxiv.org/abs/2204.03475) training recipe, the same model achieves 83.7% accuracy.
+
 * **(Jun 28, 2022)**
   * EdgeNeXt-S model trained using USI (https://arxiv.org/abs/2204.03475) is released. 
   It achieves 81.1% top-1 ImageNet-1K accuracy with only 5.59M parameters and 1.26G MAdds.
@@ -32,6 +36,8 @@ and [Fahad Shahbaz Khan](https://scholar.google.es/citations?user=zvaeYnUAAAAJ&h
 
 | Name |Acc@1 | #Params | MAdds | Model |
 |---|:---:|:---:| :---:|:---:|
+| edgenext_base_usi | 83.68 | 18.51M | 3.84G  | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.2/edgenext_base_usi.pth)
+| edgenext_base | 82.47 | 18.51M | 3.84G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.2/edgenext_base.pth)
 | edgenext_small_usi | 81.07 | 5.59M | 1.26G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.1/edgenext_small_usi.pth)
 | edgenext_small | 79.41 | 5.59M | 1.26G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_small.pth)
 | edgenext_x_small | 74.96 | 2.34M | 538M | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_x_small.pth)
@@ -102,7 +108,7 @@ This should give,
 Acc@1 79.412 Acc@5 94.512 loss 0.881
 ```
 
-###### Note: For evaluating the USI model, please set `usi_eval True`.
+##### Note: For evaluating the USI model, please set `usi_eval True`.
 
 <hr />
 
