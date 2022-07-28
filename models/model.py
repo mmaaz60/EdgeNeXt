@@ -66,6 +66,24 @@ def edgenext_small(pretrained=False, **kwargs):
     return model
 
 
+@register_model
+def edgenext_base(pretrained=False, **kwargs):
+    # 18.51M & 3840.93M @ 256 resolution
+    # 82.5% (normal) 83.7% (USI) Top-1 accuracy
+    # AA=True, Mixup & Cutmix, DropPath=0.1, BS=4096, lr=0.006, multi-scale-sampler
+    # Jetson FPS=xx.xx versus xx.xx for MobileViT_S
+    # For A100: FPS @ BS=1: xxx.xx & @ BS=256: xxxx.xx
+    model = EdgeNeXt(depths=[3, 3, 9, 3], dims=[80, 160, 288, 584], expan_ratio=4,
+                     global_block=[0, 1, 1, 1],
+                     global_block_type=['None', 'SDTA', 'SDTA', 'SDTA'],
+                     use_pos_embd_xca=[False, True, False, False],
+                     kernel_sizes=[3, 5, 7, 9],
+                     d2_scales=[2, 2, 3, 4],
+                     **kwargs)
+
+    return model
+
+
 """
     Using BN & HSwish instead of LN & GeLU
 """
