@@ -15,16 +15,14 @@ and [Fahad Shahbaz Khan](https://scholar.google.es/citations?user=zvaeYnUAAAAJ&h
 [![slides](https://img.shields.io/badge/Presentation-Slides-B762C1)](https://mbzuaiac-my.sharepoint.com/:b:/g/personal/muhammad_maaz_mbzuai_ac_ae/EaFA4bSPEMBNlJuHMbKDD3UBHmwXrmpijSRqZITk2l1-wQ?e=b7ruLV)
 
 ## :rocket: News
-* **(Jul 28, 2022)**
-  * EdgeNeXt-B model is released. It achieves 82.5% top-1 ImageNet-1K accuracy with 18.51M parameters and 3.84G MAdds.
-  Further, using USI (https://arxiv.org/abs/2204.03475) training recipe, the same model achieves 83.7% accuracy.
+* **(Aug 10, 2022):** EdgeNeXt-B ImageNet-21K pretrained model is released. It achieves 83.31% top-1 ImageNet-1K accuracy. The weights are available at [EdgeNeXt-B-IN21K](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.21/edgenext_base_IN21K.pth).
+* **(Jul 28, 2022):** EdgeNeXt-B model is released. It achieves 82.5% top-1 ImageNet-1K accuracy with 18.51M parameters and 3.84G MAdds.
+Further, using USI (https://arxiv.org/abs/2204.03475) training recipe, the same model achieves 83.7% accuracy.
 
-* **(Jun 28, 2022)**
-  * EdgeNeXt-S model trained using USI (https://arxiv.org/abs/2204.03475) is released. 
+* **(Jun 28, 2022):** EdgeNeXt-S model trained using USI (https://arxiv.org/abs/2204.03475) is released. 
   It achieves 81.1% top-1 ImageNet-1K accuracy with only 5.59M parameters and 1.26G MAdds.
 
-* **(Jun 22, 2022)**
-  * Training and evaluation code along with pre-trained models are released.
+* **(Jun 22, 2022):** Training and evaluation code along with pre-trained models are released.
   
 <hr />
 
@@ -37,6 +35,7 @@ and [Fahad Shahbaz Khan](https://scholar.google.es/citations?user=zvaeYnUAAAAJ&h
 | Name |Acc@1 | #Params | MAdds | Model |
 |---|:---:|:---:| :---:|:---:|
 | edgenext_base_usi | 83.68 | 18.51M | 3.84G  | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.2/edgenext_base_usi.pth)
+| edgenext_base_IN21K | 83.31 | 18.51M | 3.84G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.21/edgenext_base_IN21K.pth)
 | edgenext_base | 82.47 | 18.51M | 3.84G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.2/edgenext_base.pth)
 | edgenext_small_usi | 81.07 | 5.59M | 1.26G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.1/edgenext_small_usi.pth)
 | edgenext_small | 79.41 | 5.59M | 1.26G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_small.pth)
