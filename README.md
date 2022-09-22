@@ -129,12 +129,13 @@ python -m torch.distributed.launch --nproc_per_node=8 main.py \
 ## Citation
 If you use our work, please consider citing:
 ```bibtex
-    @article{Maaz2022EdgeNeXt,
-        title={EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications},
+    @inproceedings{Maaz2022EdgeNeXt,
+      title={EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications},
         author={Muhammad Maaz and Abdelrahman Shaker and Hisham Cholakkal and Salman Khan and Syed Waqas Zamir and Rao Muhammad Anwer and Fahad Shahbaz Khan},
-        journal={2206.10589},
-        year={2022}
-    }
+      booktitle={International Workshop on Computational Aspects of Deep Learning at 17th European Conference on Computer Vision (CADL2022)},
+      year={2022},
+      organization={Springer}
+}
 ```
 
 <hr />
