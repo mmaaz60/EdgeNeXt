@@ -150,6 +150,8 @@ def get_args_parser():
 
     parser.add_argument('--resume', default='',
                         help='resume from checkpoint')
+    parser.add_argument('--finetune', default='',
+                        help='finetune the model')
     parser.add_argument('--auto_resume', type=str2bool, default=True)
     parser.add_argument('--save_ckpt', type=str2bool, default=True)
     parser.add_argument('--save_ckpt_freq', default=1, type=int)
@@ -309,6 +311,10 @@ def main(args):
         input_res=args.input_size,
         classifier_dropout=args.classifier_dropout,
     )
+    if args.finetune:
+        checkpoint = torch.load(args.finetune, map_location="cpu")
+        state_dict = checkpoint[model_state_dict_name]
+        utils.load_state_dict(model, state_dict)
     model.to(device)
 
     model_ema = None
