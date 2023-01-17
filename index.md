@@ -33,6 +33,7 @@ In the pursuit of achieving ever-increasing accuracy, large and complex neural n
 | Name |Acc@1 | #Params | MAdds | Model |
 |---|:---:|:---:| :---:|:---:|
 | edgenext_base_usi | 83.68 | 18.51M | 3.84G  | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.2/edgenext_base_usi.pth)
+| edgenext_base_IN21K | 83.31 | 18.51M | 3.84G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.21/edgenext_base_IN21K.pth)
 | edgenext_base | 82.47 | 18.51M | 3.84G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.2/edgenext_base.pth)
 | edgenext_small_usi | 81.07 | 5.59M | 1.26G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.1/edgenext_small_usi.pth)
 | edgenext_small | 79.41 | 5.59M | 1.26G | [model](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_small.pth)
