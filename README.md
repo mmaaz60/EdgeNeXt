@@ -1,5 +1,5 @@
 # EdgeNeXt
-### **EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications**
+### **EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications [CADL'22, ECCVW]**
 
 [Muhammad Maaz](https://scholar.google.com/citations?user=vTy9Te8AAAAJ&hl=en&authuser=1&oi=sra), 
 [Abdelrahman Shaker](https://scholar.google.com/citations?hl=en&user=eEz4Wu4AAAAJ),
@@ -16,6 +16,7 @@ and [Fahad Shahbaz Khan](https://scholar.google.es/citations?user=zvaeYnUAAAAJ&h
 
 ## :rocket: News
 * **(Aug 10, 2022):** EdgeNeXt-B ImageNet-21K pretrained model is released. It achieves 83.31% top-1 ImageNet-1K accuracy. The weights are available at [EdgeNeXt-B-IN21K](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.21/edgenext_base_IN21K.pth).
+* **(Oct 23, 2022):** EdgeNeXt is presented at [International Workshop on Computational Aspects of Deep Learning at ECCV 2022](https://ailb-web.ing.unimore.it/cadl2022) in a *full length oral presentation*.
 * **(Jul 28, 2022):** EdgeNeXt-B model is released. It achieves 82.5% top-1 ImageNet-1K accuracy with 18.51M parameters and 3.84G MAdds.
 Further, using USI (https://arxiv.org/abs/2204.03475) training recipe, the same model achieves 83.7% accuracy.
 
