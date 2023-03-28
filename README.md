@@ -15,6 +15,7 @@ and [Fahad Shahbaz Khan](https://scholar.google.es/citations?user=zvaeYnUAAAAJ&h
 [![slides](https://img.shields.io/badge/Presentation-Slides-B762C1)](https://mbzuaiac-my.sharepoint.com/:b:/g/personal/muhammad_maaz_mbzuai_ac_ae/EaFA4bSPEMBNlJuHMbKDD3UBHmwXrmpijSRqZITk2l1-wQ?e=b7ruLV)
 
 ## :rocket: News
+* **(Mar 28, 2023):** [SwiftFormer](https://github.com/Amshaker/SwiftFormer) is released :fire::fire::fire:. Our small variant achieves 78.5% top-1 ImageNet-1K accuracy with only 0.8 ms latency on iPhone 14.
 * **(Aug 10, 2022):** EdgeNeXt-B ImageNet-21K pretrained model is released. It achieves 83.31% top-1 ImageNet-1K accuracy. The weights are available at [EdgeNeXt-B-IN21K](https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.21/edgenext_base_IN21K.pth).
 * **(Oct 23, 2022):** EdgeNeXt is presented at [International Workshop on Computational Aspects of Deep Learning at ECCV 2022](https://ailb-web.ing.unimore.it/cadl2022) in a *full length oral presentation*.
 * **(Jul 28, 2022):** EdgeNeXt-B model is released. It achieves 82.5% top-1 ImageNet-1K accuracy with 18.51M parameters and 3.84G MAdds.
