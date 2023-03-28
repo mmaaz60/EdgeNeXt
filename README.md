@@ -149,3 +149,6 @@ Should you have any question, please create an issue on this repository or conta
 ## References
 Our code is based on [ConvNeXt](https://github.com/facebookresearch/ConvNeXt) repository. 
 We thank them for releasing their code.
+
+## Our Related Works
+- SwiftFormer: Efficient Additive Attention for Transformer-based Real-time Mobile Vision Applications. [Paper](https://arxiv.org/abs/2303.15446) | [Code](https://github.com/Amshaker/SwiftFormer).
